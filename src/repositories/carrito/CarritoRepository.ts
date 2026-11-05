@@ -51,8 +51,8 @@ export class CarritoRepository {
         await item.destroy()
     }
 
-    async deleteByUsuario(usuarioId: number): Promise<number> {
-        return CarritoItem.destroy({ where: { usuarioId } })
+    async deleteByUsuario(usuarioId: number, transaction?: Transaction): Promise<number> {
+        return CarritoItem.destroy({ where: { usuarioId }, transaction })
     }
 
     async findProductoActivo(productoId: number): Promise<Producto | null> {

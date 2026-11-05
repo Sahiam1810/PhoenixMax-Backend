@@ -1,12 +1,26 @@
 import { BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table } from "sequelize-typescript"
+import type { Optional } from "sequelize"
 import { CompraItem } from "./CompraItem.js"
 import { Cuenta } from "./Cuenta.js"
 import { Notificacion } from "./Notificacion.js"
 import { Pantalla } from "./Pantalla.js"
 import { Usuario } from "./Usuario.js"
 
+export interface ServicioAttributes {
+    id: number
+    compraItemId: number
+    usuarioId: number
+    cuentaId: number
+    pantallaId: number | null
+    fechaInicio: Date
+    fechaVencimiento: Date
+    estado: "activo" | "vencido"
+}
+
+export type ServicioCreationAttributes = Optional<ServicioAttributes, "id" | "pantallaId" | "estado">
+
 @Table({ tableName: "servicios", timestamps: true })
-export class Servicio extends Model {
+export class Servicio extends Model<ServicioAttributes, ServicioCreationAttributes> implements ServicioAttributes {
     @Column({ type: DataType.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true }) declare id: number
     @ForeignKey(() => CompraItem) @Column({ type: DataType.INTEGER.UNSIGNED, allowNull: false }) declare compraItemId: number
     @ForeignKey(() => Usuario) @Column({ type: DataType.INTEGER.UNSIGNED, allowNull: false }) declare usuarioId: number
