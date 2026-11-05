@@ -36,5 +36,4 @@ export const decrypt = (value: string): string => {
     } catch {
         throw new Error("Texto cifrado inválido")
     }
-
 }

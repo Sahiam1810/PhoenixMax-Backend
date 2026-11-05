@@ -2,7 +2,7 @@ import type { Transaction } from "sequelize"
 import { Cuenta } from "../../../models/Cuenta.js"
 import { Pantalla } from "../../../models/Pantalla.js"
 import { Plataforma } from "../../../models/Plataforma.js"
-import type { PantallaGenerada } from "../../../services/admin/cuentas/generarPantallas.js"
+import type { PantallaGenerada } from "../../../interfaces/Inventario.js"
 
 interface CreateCuentaData {
     plataformaId: number
@@ -18,7 +18,7 @@ interface FindCuentasInput {
     estado?: "disponible" | "parcial" | "vendida" | "inactiva"
 }
 
-interface CuentaWhere {
+type CuentaWhere = {
     plataformaId?: number
     estado?: "disponible" | "parcial" | "vendida" | "inactiva"
 }

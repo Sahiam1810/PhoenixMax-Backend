@@ -4,6 +4,13 @@ export interface PantallaPublica {
     estado: "disponible" | "vendida"
 }
 
+export interface PantallaGenerada {
+    cuentaId: number
+    nombrePerfil: string
+    pin: string
+    estado: "disponible"
+}
+
 export interface CuentaPublica {
     id: number
     plataformaId: number

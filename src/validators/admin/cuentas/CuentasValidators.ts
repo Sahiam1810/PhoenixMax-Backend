@@ -21,12 +21,6 @@ export const createCuentaSchema = z.object({
 })
 
 export const listCuentasQuerySchema = paginationQuerySchema.extend({
-    limit: z.coerce
-        .number({ error: "El límite debe ser un número entero positivo" })
-        .int("El límite debe ser un número entero positivo")
-        .positive("El límite debe ser un número entero positivo")
-        .max(50, "El límite máximo es 50")
-        .default(10),
     plataforma: plataformaIdSchema.optional(),
     estado: z
         .enum(["disponible", "parcial", "vendida", "inactiva"], { error: "El estado no es válido" })

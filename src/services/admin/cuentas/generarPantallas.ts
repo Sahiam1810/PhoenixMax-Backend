@@ -1,11 +1,5 @@
 import { randomInt } from "node:crypto"
-
-export interface PantallaGenerada {
-    cuentaId: number
-    nombrePerfil: string
-    pin: string
-    estado: "disponible"
-}
+import type { PantallaGenerada } from "../../../interfaces/Inventario.js"
 
 export const generarPantallas = (cuentaId: number, maxPantallas: number, generarPin = (): string => String(randomInt(1000, 10000))): PantallaGenerada[] => {
     const pines = new Set<string>()

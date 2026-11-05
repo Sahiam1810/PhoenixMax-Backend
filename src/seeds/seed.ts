@@ -72,13 +72,23 @@ const sembrarCatalogoEInventario = async (): Promise<void> => {
         for (let i = 1; i <= 3; i++) {
             const [cuenta] = await Cuenta.findOrCreate({
                 where: { plataformaId: plataforma.id, emailAcceso: `${slug}${i}@streamstore.test` },
-                defaults: { passwordAcceso: encrypt(`Clave-${slug}-${i}`), estado: "disponible" }
+                defaults: {
+                    plataformaId: plataforma.id,
+                    emailAcceso: `${slug}${i}@streamstore.test`,
+                    passwordAcceso: encrypt(`Clave-${slug}-${i}`),
+                    estado: "disponible"
+                }
             })
 
             for (let j = 1; j <= datos.maxPantallas; j++) {
                 await Pantalla.findOrCreate({
                     where: { cuentaId: cuenta.id, nombrePerfil: `Perfil ${j}` },
-                    defaults: { pin: String(1000 + cuenta.id * 10 + j), estado: "disponible" }
+                    defaults: {
+                        cuentaId: cuenta.id,
+                        nombrePerfil: `Perfil ${j}`,
+                        pin: String(1000 + cuenta.id * 10 + j),
+                        estado: "disponible"
+                    }
                 })
             }
         }
