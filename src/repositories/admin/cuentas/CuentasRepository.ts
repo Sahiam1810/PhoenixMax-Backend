@@ -55,6 +55,17 @@ export class CuentasRepository {
         })
     }
 
+    async findCuentaForUpdate(id: number, transaction: Transaction): Promise<Cuenta | null> {
+        return Cuenta.findByPk(id, {
+            transaction,
+            lock: transaction.LOCK.UPDATE
+        })
+    }
+
+    async updateCuentaEstado(cuenta: Cuenta, estado: "disponible" | "parcial" | "vendida" | "inactiva", transaction: Transaction): Promise<void> {
+        await cuenta.update({ estado }, { transaction })
+    }
+
     async findAndCountCuentas(input: FindCuentasInput): Promise<{ rows: Cuenta[], count: number }> {
         const where: CuentaWhere = {}
 

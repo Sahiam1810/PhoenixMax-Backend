@@ -27,5 +27,10 @@ export const listCuentasQuerySchema = paginationQuerySchema.extend({
         .optional()
 })
 
+export const updateCuentaEstadoSchema = z.object({
+    estado: z.enum(["activa", "inactiva"], { error: "El estado debe ser activa o inactiva" })
+})
+
 export type CreateCuentaInput = z.infer<typeof createCuentaSchema>
 export type ListCuentasQuery = z.infer<typeof listCuentasQuerySchema>
+export type UpdateCuentaEstadoInput = z.infer<typeof updateCuentaEstadoSchema>

@@ -13,6 +13,7 @@ export interface PantallaGenerada {
 
 export interface CuentaPublica {
     id: number
+    createdAt: string
     plataformaId: number
     plataforma: {
         id: number

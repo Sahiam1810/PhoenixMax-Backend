@@ -20,6 +20,7 @@ export class Cuenta extends Model<CuentaAttributes, CuentaCreationAttributes> im
     @Column({ type: DataType.STRING(160), allowNull: false }) declare emailAcceso: string
     @Column({ type: DataType.TEXT, allowNull: false }) declare passwordAcceso: string
     @Column({ type: DataType.ENUM("disponible", "parcial", "vendida", "inactiva"), allowNull: false, defaultValue: "disponible" }) declare estado: "disponible" | "parcial" | "vendida" | "inactiva"
+    declare createdAt: Date
     @BelongsTo(() => Plataforma) declare plataforma?: Plataforma
     @HasMany(() => Pantalla) declare pantallas?: Pantalla[]
 }
