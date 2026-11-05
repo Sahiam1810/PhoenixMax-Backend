@@ -15,7 +15,7 @@ export class Plataforma extends Model {
     @Column({ type: DataType.INTEGER.UNSIGNED, allowNull: false }) declare maxPantallas: number
 
     @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true }) declare activo: boolean
-    
+
     @HasMany(() => Producto) declare productos?: Producto[]
     @HasMany(() => Cuenta) declare cuentas?: Cuenta[]
 }

@@ -1,5 +1,17 @@
 import type { Request, Response } from "express"
-import { ApiResponse } from "../../utils/apiResponse.js"
+import { PlataformasRepository } from "../../repositories/plataformas/PlataformasRepository.js"
 import { PlataformasService } from "../../services/plataformas/PlataformasService.js"
-const service = new PlataformasService()
-export class PlataformasController { static list(_req: Request, res: Response): void { try { service.list() } catch (error) { ApiResponse.error(res, error) } } }
+import { ApiResponse } from "../../utils/apiResponse.js"
+
+const service = new PlataformasService(new PlataformasRepository())
+
+export class PlataformasController {
+    static async list(_req: Request, res: Response): Promise<void> {
+        try {
+            const plataformas = await service.list()
+            ApiResponse.success(res, plataformas, "Plataformas obtenidas")
+        } catch (error) {
+            ApiResponse.error(res, error)
+        }
+    }
+}

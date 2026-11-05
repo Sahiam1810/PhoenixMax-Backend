@@ -16,7 +16,10 @@ const DIA = 24 * 60 * 60 * 1000
 const sumarDias = (fecha: Date, dias: number): Date => new Date(fecha.getTime() + dias * DIA)
 
 const obtener = <T>(valor: T | null, mensaje: string): T => {
-    if (!valor) throw new Error(mensaje)
+    if (!valor) {
+        throw new Error(mensaje)
+    }
+
     return valor
 }
 

@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS productos (
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_productos_activo_plataforma (activo, plataformaId),
     CONSTRAINT fk_productos_plataforma FOREIGN KEY (plataformaId) REFERENCES plataformas(id)
 ) ENGINE=InnoDB;
 
@@ -43,6 +44,7 @@ CREATE TABLE IF NOT EXISTS cuentas (
     estado ENUM('disponible', 'parcial', 'vendida', 'inactiva') NOT NULL DEFAULT 'disponible' COMMENT 'disponible, parcial, vendida o inactiva',
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_cuentas_plataforma_estado (plataformaId, estado),
     CONSTRAINT fk_cuentas_plataforma FOREIGN KEY (plataformaId) REFERENCES plataformas(id)
 ) ENGINE=InnoDB;
 
@@ -54,6 +56,7 @@ CREATE TABLE IF NOT EXISTS pantallas (
     estado ENUM('disponible', 'vendida') NOT NULL DEFAULT 'disponible' COMMENT 'disponible o vendida',
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_pantallas_cuenta_estado (cuentaId, estado),
     CONSTRAINT fk_pantallas_cuenta FOREIGN KEY (cuentaId) REFERENCES cuentas(id)
 ) ENGINE=InnoDB;
 
@@ -122,5 +125,5 @@ CREATE TABLE IF NOT EXISTS notificaciones (
     CONSTRAINT fk_notificaciones_servicio FOREIGN KEY (servicioId) REFERENCES servicios(id)
 ) ENGINE=InnoDB;
 
--- Datos semilla pendientes: 1 admin, 2 clientes, 4 plataformas, 2 productos por plataforma,
+-- Los datos semilla se cargan con npm run seed: 1 admin, 2 clientes, 4 plataformas, 2 productos por plataforma,
 -- 3 cuentas por plataforma, servicios por vencer en 3 y 1 día y un producto con stock bajo.

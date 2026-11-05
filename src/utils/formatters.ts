@@ -1,8 +1,8 @@
-import type { Usuario } from "../models/Usuario.js"
-import type { UsuarioPublico } from "../interfaces/User.js"
-import type { PlataformaPublica, ProductoPublico } from "../interfaces/Catalogo.js"
 import type { Plataforma } from "../models/Plataforma.js"
 import type { Producto } from "../models/Producto.js"
+import type { Usuario } from "../models/Usuario.js"
+import type { PlataformaPublica, ProductoPublico } from "../interfaces/Catalogo.js"
+import type { UsuarioPublico } from "../interfaces/User.js"
 
 export const toMoney = (value: number): string => value.toFixed(2)
 
@@ -24,7 +24,7 @@ export const toPlataformaPublica = (plataforma: Plataforma): PlataformaPublica =
 
 export const toProductoPublico = (producto: Producto, stock: number): ProductoPublico => {
     if (!producto.plataforma) {
-        throw new Error("La plataforma del producto no está disponible")
+        throw new Error("El producto no tiene la plataforma cargada")
     }
 
     return {
@@ -32,7 +32,7 @@ export const toProductoPublico = (producto: Producto, stock: number): ProductoPu
         plataformaId: producto.plataformaId,
         tipo: producto.tipo,
         duracionDias: producto.duracionDias,
-        precio: Number(producto.precio).toFixed(2),
+        precio: toMoney(Number(producto.precio)),
         stock,
         agotado: stock === 0,
         plataforma: {

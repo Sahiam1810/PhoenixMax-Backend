@@ -1,3 +1,5 @@
+export type TipoProducto = "cuenta" | "pantalla"
+
 export interface PlataformaPublica {
     id: number
     nombre: string
@@ -6,17 +8,19 @@ export interface PlataformaPublica {
     maxPantallas: number
 }
 
+export interface PlataformaResumen {
+    id: number
+    nombre: string
+    logoUrl: string | null
+}
+
 export interface ProductoPublico {
     id: number
     plataformaId: number
-    tipo: "cuenta" | "pantalla"
+    tipo: TipoProducto
     duracionDias: number
     precio: string
     stock: number
     agotado: boolean
-    plataforma: {
-        id: number
-        nombre: string
-        logoUrl: string | null
-    }
+    plataforma: PlataformaResumen
 }
