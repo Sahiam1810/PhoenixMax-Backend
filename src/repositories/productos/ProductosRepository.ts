@@ -50,7 +50,8 @@ const STOCK_PANTALLAS_SQL = `
 const plataformaActivaInclude = {
     model: Plataforma,
     required: true,
-    where: { activo: true }
+    where: { activo: true },
+    attributes: ["id", "nombre", "logoUrl"]
 }
 
 export class ProductosRepository {
