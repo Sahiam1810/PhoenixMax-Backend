@@ -17,7 +17,16 @@ import { authenticate } from "../middlewares/AuthMiddleware.js"
 import { requireRole } from "../middlewares/RoleMiddleware.js"
 
 export const apiRouter = Router()
-apiRouter.get("/health", async (_req, res) => { try { await sequelize.authenticate(); ApiResponse.success(res, { database: "connected" }, "Servicio disponible") } catch { res.status(503).json({ error: "Base de datos no disponible" }) } })
+
+apiRouter.get("/health", async (_req, res) => {
+    try {
+        await sequelize.authenticate()
+        ApiResponse.success(res, { database: "connected" }, "Servicio disponible")
+    } catch {
+        res.status(503).json({ error: "Base de datos no disponible" })
+    }
+})
+
 apiRouter.use("/auth", authRouter)
 apiRouter.use("/plataformas", plataformasRouter)
 apiRouter.use("/productos", productosRouter)
