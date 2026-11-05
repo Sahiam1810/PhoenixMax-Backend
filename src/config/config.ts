@@ -16,7 +16,7 @@ export const config = {
         port: Number(process.env.DB_PORT ?? 3306),
         name: process.env.DB_DATABASE ?? "streamstoreDb",
         username: process.env.DB_USERNAME ?? "root",
-        password: process.env.DB_PASSWORD ?? "Esteban.2001",
+        password: process.env.DB_PASSWORD ?? "",
         timezone: process.env.DB_TIMEZONE ?? "-05:00"
     },
     jwt: {
@@ -33,5 +33,5 @@ export const config = {
         pass: process.env.MAIL_PASS ?? "",
         from: process.env.MAIL_FROM ?? ""
     },
-    timezone: process.env.APP_TIMEZONE ?? "America/Bogota"
+    timezone: process.env.APP_TIMEZONE ?? "-05:00"
 }
