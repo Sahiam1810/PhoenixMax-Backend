@@ -1,0 +1,1966 @@
+{
+    "info": {
+        "name": "PhoenixMax StreamStore API",
+        "description": "Endpoints implementados del backend de StreamStore. Las rutas de /admin/plataformas, /admin/productos, /admin/compras y /admin/resumen responden 501 y no están incluidas.\n\nOrden sugerido: Auth (login cliente y admin) antes de las demás carpetas. La carpeta \"Flujo demo\" se puede correr completa con el Collection Runner.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Salud",
+            "item": [
+                {
+                    "name": "Salud",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/health",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Comprueba que el servidor responde y que la base de datos está conectada. Público.\n\nErrores: 503 `{ \"error\": \"Base de datos no disponible\" }`."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Registro",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Crea un usuario con rol cliente. Público. `telefono` es opcional; `password` mínimo 8 caracteres. La respuesta no incluye `passwordHash`.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 409 \"El correo ya está registrado\".",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Cliente Postman\",\n    \"email\": \"postman{{$timestamp}}@streamstore.test\",\n    \"password\": \"Cliente123*\",\n    \"telefono\": \"3001234567\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login cliente",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.collectionVariables.set(\"tokenCliente\", pm.response.json().data.token)"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Inicia sesión con el cliente del seed y guarda el JWT en `tokenCliente`. Público.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 401 \"Credenciales incorrectas\".",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{clienteEmail}}\",\n    \"password\": \"{{clientePassword}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.collectionVariables.set(\"tokenAdmin\", pm.response.json().data.token)",
+                                    "",
+                                    "pm.test(\"Rol admin\", function () {",
+                                    "    pm.expect(pm.response.json().data.usuario.rol).to.eql(\"admin\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Inicia sesión con el admin del seed y guarda el JWT en `tokenAdmin`. Público.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 401 \"Credenciales incorrectas\".",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Usuario actual",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        },
+                        "description": "Devuelve el usuario del token. Requiere token (cualquier rol).\n\nErrores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 404 \"Usuario no encontrado\"."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Plataformas",
+            "item": [
+                {
+                    "name": "Listar plataformas",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.collectionVariables.set(\"plataformaId\", pm.response.json().data[0].id)"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/plataformas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "plataformas"
+                            ]
+                        },
+                        "description": "Lista las plataformas activas. Público. Guarda la primera en `plataformaId`."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Productos",
+            "item": [
+                {
+                    "name": "Listar productos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "const productos = pm.response.json().data.data",
+                                    "const netflix = productos.find(function (p) { return p.plataforma.nombre === \"Netflix\" && p.tipo === \"pantalla\" })",
+                                    "pm.test(\"Existe Netflix pantalla con stock\", function () {",
+                                    "    pm.expect(netflix, \"Netflix pantalla\").to.be.an(\"object\")",
+                                    "    pm.expect(netflix.stock).to.be.above(0)",
+                                    "})",
+                                    "pm.collectionVariables.set(\"productoId\", netflix.id)"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/productos?page=1&limit=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "productos"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "plataforma",
+                                    "value": "{{plataformaId}}",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "tipo",
+                                    "value": "pantalla",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Lista los productos activos con su stock, paginado (`limit` máximo 50). Filtros opcionales `plataforma` (id) y `tipo` (`cuenta` o `pantalla`). Público. Guarda en `productoId` la pantalla de Netflix.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Detalle de producto",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/productos/{{productoId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "productos",
+                                "{{productoId}}"
+                            ]
+                        },
+                        "description": "Devuelve un producto activo con su stock. Público.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 404 \"Producto no encontrado\"."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Carrito",
+            "item": [
+                {
+                    "name": "Ver carrito",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/carrito",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "carrito"
+                            ]
+                        },
+                        "description": "Devuelve el carrito del cliente con stock actual por ítem (`agotado`, `excedeStock`, `noDisponible`), `totalItems` y `total`. Rol cliente.\n\nErrores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Agregar producto",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "const item = pm.response.json().data.items.find(function (i) { return i.productoId === Number(pm.collectionVariables.get(\"productoId\")) })",
+                                    "pm.collectionVariables.set(\"itemId\", item.id)"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/carrito",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "carrito"
+                            ]
+                        },
+                        "description": "Agrega un producto al carrito; si ya estaba, suma la cantidad. `cantidad` entre 1 y 100. Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 400 \"El producto está agotado\" o \"Solo hay N unidades disponibles\"; 404 \"Producto no encontrado\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"productoId\": {{productoId}},\n    \"cantidad\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Cambiar cantidad",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/carrito/{{itemId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "carrito",
+                                "{{itemId}}"
+                            ]
+                        },
+                        "description": "Reemplaza la cantidad de un ítem del carrito. Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 404 \"Ítem no encontrado\"; 400 \"El producto ya no está disponible\" o \"Solo hay N unidades disponibles\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"cantidad\": 2\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Quitar producto",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/carrito/{{itemId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "carrito",
+                                "{{itemId}}"
+                            ]
+                        },
+                        "description": "Quita un ítem del carrito. Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 404 \"Ítem no encontrado\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Vaciar carrito",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/carrito",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "carrito"
+                            ]
+                        },
+                        "description": "Elimina todos los ítems del carrito. Rol cliente.\n\nErrores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Compras",
+            "item": [
+                {
+                    "name": "Crear compra",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.sendRequest({",
+                                    "    url: pm.variables.replaceIn(\"{{baseUrl}}/carrito\"),",
+                                    "    method: \"POST\",",
+                                    "    header: {",
+                                    "        \"Content-Type\": \"application/json\",",
+                                    "        \"Authorization\": \"Bearer \" + pm.variables.get(\"tokenCliente\")",
+                                    "    },",
+                                    "    body: {",
+                                    "        mode: \"raw\",",
+                                    "        raw: JSON.stringify({ productoId: Number(pm.variables.get(\"productoId\")), cantidad: 1 })",
+                                    "    }",
+                                    "})"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.collectionVariables.set(\"compraId\", pm.response.json().data.id)",
+                                    "",
+                                    "pm.test(\"Compra pendiente\", function () {",
+                                    "    pm.expect(pm.response.json().data.estado).to.eql(\"pendiente\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/compras",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "compras"
+                            ]
+                        },
+                        "description": "Crea una compra `pendiente` con los ítems del carrito y los precios actuales. Cancela las compras pendientes anteriores del cliente. No asigna inventario. Rol cliente.\n\nErrores: 400 \"El carrito está vacío\"; 409 si algún producto ya no está disponible o no tiene stock (\"... Ajusta tu carrito.\"). Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Pagar compra",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Compra pagada\", function () {",
+                                    "    pm.expect(pm.response.json().data.estado).to.eql(\"pagada\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/compras/{{compraId}}/pagar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "compras",
+                                "{{compraId}}",
+                                "pagar"
+                            ]
+                        },
+                        "description": "Paga la compra (pago simulado; el body es opcional y `metodoPago` solo acepta `simulado`). En una transacción bloquea cuentas y pantallas, asigna inventario, crea los servicios y vacía el carrito. Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 404 \"Compra no encontrada\"; 409 \"La compra ya fue pagada\", \"La compra fue cancelada. Vuelve a hacer el pedido desde tu carrito\" o sin stock (\"... Ajusta tu carrito.\"); 400 \"La compra no tiene productos\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"metodoPago\": \"simulado\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mis compras",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/compras/mias?page=1&limit=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "compras",
+                                "mias"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        },
+                        "description": "Lista las compras del cliente, más recientes primero, paginadas (`limit` máximo 50). Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Detalle de compra",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/compras/{{compraId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "compras",
+                                "{{compraId}}"
+                            ]
+                        },
+                        "description": "Devuelve una compra del cliente con sus ítems. Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 404 \"Compra no encontrada\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Servicios",
+            "item": [
+                {
+                    "name": "Mis servicios",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Cache-Control no-store\", function () {",
+                                    "    pm.expect(pm.response.headers.get(\"Cache-Control\")).to.eql(\"no-store\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/servicios/mios",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "servicios",
+                                "mios"
+                            ]
+                        },
+                        "description": "Lista los servicios de compras pagadas del cliente ordenados por vencimiento, con credenciales descifradas, `diasRestantes` y `estado` (`activo`, `por_vencer`, `vencido`). Si está vencido, las 4 credenciales van en null. Header `Cache-Control: no-store`. Rol cliente.\n\nErrores: 500 \"No se pudieron obtener las credenciales\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "Listar cuentas",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenAdmin}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/cuentas?page=1&limit=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "cuentas"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "plataforma",
+                                    "value": "{{plataformaId}}",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "estado",
+                                    "value": "disponible",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Lista el inventario de cuentas con sus pantallas y conteos, sin contraseñas, paginado (`limit` máximo 50). Filtros opcionales `plataforma` (id) y `estado` (`disponible`, `parcial`, `vendida`, `inactiva`). Rol admin.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es admin."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Crear cuenta",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenAdmin}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/cuentas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "cuentas"
+                            ]
+                        },
+                        "description": "Crea una cuenta de streaming (contraseña cifrada con AES) y genera tantas pantallas como `maxPantallas` de la plataforma. `passwordAcceso` entre 8 y 255 caracteres. Rol admin.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 404 \"Plataforma no encontrada\"; 400 \"La plataforma está inactiva\"; 409 \"Ya existe una cuenta para esta plataforma con ese correo\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es admin.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"plataformaId\": {{plataformaId}},\n    \"emailAcceso\": \"postman{{$timestamp}}@streamstore.test\",\n    \"passwordAcceso\": \"ClaveDemo123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Ejecutar revisión de vencimientos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Resultado con conteos\", function () {",
+                                    "    pm.expect(pm.response.json().data).to.have.all.keys(\"revisados\", \"notificacionesEnviadas\", \"serviciosVencidos\", \"errores\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenAdmin}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/cron/ejecutar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "cron",
+                                "ejecutar"
+                            ]
+                        },
+                        "description": "Ejecuta ahora la revisión de vencimientos del job diario: envía los correos de 3 días, 1 día y vencimiento sin repetir avisos, y marca como vencidos los servicios cuya fecha pasó. Sin body. Rol admin.\n\nErrores: 409 \"Ya hay una revisión en curso\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es admin."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Flujo demo",
+            "item": [
+                {
+                    "name": "1. Registro de cliente nuevo",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.collectionVariables.set(\"flujoEmail\", \"demo\" + Date.now() + \"@streamstore.test\")"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Rol cliente y sin passwordHash\", function () {",
+                                    "    const usuario = pm.response.json().data",
+                                    "    pm.expect(usuario.rol).to.eql(\"cliente\")",
+                                    "    pm.expect(usuario).to.not.have.property(\"passwordHash\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Registra un cliente nuevo con un correo distinto en cada corrida (`demo<timestamp>@streamstore.test`).",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Cliente Demo\",\n    \"email\": \"{{flujoEmail}}\",\n    \"password\": \"{{flujoPassword}}\",\n    \"telefono\": \"3005550000\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2. Login del cliente nuevo",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.collectionVariables.set(\"tokenCliente\", pm.response.json().data.token)"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Inicia sesión con el cliente recién creado y guarda `tokenCliente`.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{flujoEmail}}\",\n    \"password\": \"{{flujoPassword}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3. Catálogo de productos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "const productos = pm.response.json().data.data",
+                                    "const netflix = productos.find(function (p) { return p.plataforma.nombre === \"Netflix\" && p.tipo === \"pantalla\" })",
+                                    "pm.test(\"Existe Netflix pantalla con stock\", function () {",
+                                    "    pm.expect(netflix, \"Netflix pantalla\").to.be.an(\"object\")",
+                                    "    pm.expect(netflix.stock).to.be.above(0)",
+                                    "})",
+                                    "const disney = productos.find(function (p) { return p.plataforma.nombre === \"Disney+\" && p.tipo === \"pantalla\" })",
+                                    "pm.test(\"Existe Disney+ pantalla con stock\", function () {",
+                                    "    pm.expect(disney, \"Disney+ pantalla\").to.be.an(\"object\")",
+                                    "    pm.expect(disney.stock).to.be.above(0)",
+                                    "})",
+                                    "pm.collectionVariables.set(\"productoId\", netflix.id)",
+                                    "pm.collectionVariables.set(\"productoDisneyId\", disney.id)",
+                                    "pm.collectionVariables.set(\"plataformaId\", disney.plataforma.id)"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/productos?page=1&limit=50",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "productos"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "50"
+                                }
+                            ]
+                        },
+                        "description": "Lista los productos con stock. Guarda la pantalla de Netflix en `productoId`, la pantalla de Disney+ en `productoDisneyId` y la plataforma Disney+ en `plataformaId`."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "4. Agregar pantalla de Netflix",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "const item = pm.response.json().data.items.find(function (i) { return i.productoId === Number(pm.collectionVariables.get(\"productoId\")) })",
+                                    "pm.collectionVariables.set(\"itemId\", item.id)"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/carrito",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "carrito"
+                            ]
+                        },
+                        "description": "Agrega un producto al carrito; si ya estaba, suma la cantidad. `cantidad` entre 1 y 100. Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 400 \"El producto está agotado\" o \"Solo hay N unidades disponibles\"; 404 \"Producto no encontrado\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"productoId\": {{productoId}},\n    \"cantidad\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5. Agregar pantalla de Disney+",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/carrito",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "carrito"
+                            ]
+                        },
+                        "description": "Agrega un producto al carrito; si ya estaba, suma la cantidad. `cantidad` entre 1 y 100. Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 400 \"El producto está agotado\" o \"Solo hay N unidades disponibles\"; 404 \"Producto no encontrado\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"productoId\": {{productoDisneyId}},\n    \"cantidad\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "6. Ver carrito",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Carrito con 2 productos\", function () {",
+                                    "    pm.expect(pm.response.json().data.items).to.have.lengthOf(2)",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/carrito",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "carrito"
+                            ]
+                        },
+                        "description": "Devuelve el carrito del cliente con stock actual por ítem (`agotado`, `excedeStock`, `noDisponible`), `totalItems` y `total`. Rol cliente.\n\nErrores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "7. Crear compra",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.collectionVariables.set(\"compraId\", pm.response.json().data.id)",
+                                    "",
+                                    "pm.test(\"Compra pendiente\", function () {",
+                                    "    pm.expect(pm.response.json().data.estado).to.eql(\"pendiente\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/compras",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "compras"
+                            ]
+                        },
+                        "description": "Crea una compra `pendiente` con los ítems del carrito y los precios actuales. Cancela las compras pendientes anteriores del cliente. No asigna inventario. Rol cliente.\n\nErrores: 400 \"El carrito está vacío\"; 409 si algún producto ya no está disponible o no tiene stock (\"... Ajusta tu carrito.\"). Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "8. Pagar compra",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Compra pagada\", function () {",
+                                    "    pm.expect(pm.response.json().data.estado).to.eql(\"pagada\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/compras/{{compraId}}/pagar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "compras",
+                                "{{compraId}}",
+                                "pagar"
+                            ]
+                        },
+                        "description": "Paga la compra (pago simulado; el body es opcional y `metodoPago` solo acepta `simulado`). En una transacción bloquea cuentas y pantallas, asigna inventario, crea los servicios y vacía el carrito. Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 404 \"Compra no encontrada\"; 409 \"La compra ya fue pagada\", \"La compra fue cancelada. Vuelve a hacer el pedido desde tu carrito\" o sin stock (\"... Ajusta tu carrito.\"); 400 \"La compra no tiene productos\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"metodoPago\": \"simulado\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "9. Mis servicios",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Cache-Control no-store\", function () {",
+                                    "    pm.expect(pm.response.headers.get(\"Cache-Control\")).to.eql(\"no-store\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Servicios nuevos con credenciales\", function () {",
+                                    "    const servicios = pm.response.json().data",
+                                    "    pm.expect(servicios).to.have.lengthOf(2)",
+                                    "    servicios.forEach(function (s) {",
+                                    "        pm.expect(s.passwordAcceso).to.be.a(\"string\")",
+                                    "        pm.expect(s.estado).to.eql(\"activo\")",
+                                    "    })",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/servicios/mios",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "servicios",
+                                "mios"
+                            ]
+                        },
+                        "description": "Lista los servicios de compras pagadas del cliente ordenados por vencimiento, con credenciales descifradas, `diasRestantes` y `estado` (`activo`, `por_vencer`, `vencido`). Si está vencido, las 4 credenciales van en null. Header `Cache-Control: no-store`. Rol cliente.\n\nErrores: 500 \"No se pudieron obtener las credenciales\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "10. Mis compras",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenCliente}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/compras/mias?page=1&limit=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "compras",
+                                "mias"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        },
+                        "description": "Lista las compras del cliente, más recientes primero, paginadas (`limit` máximo 50). Rol cliente.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es cliente."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "11. Login admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.collectionVariables.set(\"tokenAdmin\", pm.response.json().data.token)"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Inicia sesión con el admin del seed y guarda `tokenAdmin`.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "12. Crear cuenta en inventario (Disney+)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "",
+                                    "pm.test(\"Pantallas generadas y disponibles\", function () {",
+                                    "    const cuenta = pm.response.json().data",
+                                    "    pm.expect(cuenta.estado).to.eql(\"disponible\")",
+                                    "    pm.expect(cuenta.pantallasTotal).to.be.above(0)",
+                                    "    pm.expect(cuenta.pantallasDisponibles).to.eql(cuenta.pantallasTotal)",
+                                    "    pm.expect(cuenta).to.not.have.property(\"passwordAcceso\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenAdmin}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/cuentas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "cuentas"
+                            ]
+                        },
+                        "description": "Crea una cuenta de streaming (contraseña cifrada con AES) y genera tantas pantallas como `maxPantallas` de la plataforma. `passwordAcceso` entre 8 y 255 caracteres. Rol admin.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. 404 \"Plataforma no encontrada\"; 400 \"La plataforma está inactiva\"; 409 \"Ya existe una cuenta para esta plataforma con ese correo\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es admin.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"plataformaId\": {{plataformaId}},\n    \"emailAcceso\": \"demo{{$timestamp}}@streamstore.test\",\n    \"passwordAcceso\": \"ClaveDemo123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "13. Listar inventario (Disney+ disponibles)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenAdmin}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/cuentas?page=1&limit=10&plataforma={{plataformaId}}&estado=disponible",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "cuentas"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "plataforma",
+                                    "value": "{{plataformaId}}"
+                                },
+                                {
+                                    "key": "estado",
+                                    "value": "disponible"
+                                }
+                            ]
+                        },
+                        "description": "Lista el inventario de cuentas con sus pantallas y conteos, sin contraseñas, paginado (`limit` máximo 50). Filtros opcionales `plataforma` (id) y `estado` (`disponible`, `parcial`, `vendida`, `inactiva`). Rol admin.\n\nErrores: 400 \"Datos inválidos\" con `errors` por campo si el body o los parámetros no cumplen el validator. Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es admin."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "14. Ejecutar revisión de vencimientos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200)",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Respuesta con forma { message, data }\", function () {",
+                                    "    const json = pm.response.json()",
+                                    "    pm.expect(json).to.have.property(\"message\")",
+                                    "    pm.expect(json).to.have.property(\"data\")",
+                                    "})",
+                                    "",
+                                    "pm.test(\"Resultado con conteos\", function () {",
+                                    "    pm.expect(pm.response.json().data).to.have.all.keys(\"revisados\", \"notificacionesEnviadas\", \"serviciosVencidos\", \"errores\")",
+                                    "})"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{tokenAdmin}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/cron/ejecutar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "cron",
+                                "ejecutar"
+                            ]
+                        },
+                        "description": "Ejecuta ahora la revisión de vencimientos del job diario: envía los correos de 3 días, 1 día y vencimiento sin repetir avisos, y marca como vencidos los servicios cuya fecha pasó. Sin body. Rol admin.\n\nErrores: 409 \"Ya hay una revisión en curso\". Errores: 401 \"Token requerido\" o \"Token inválido o vencido\"; 403 \"No tienes permiso\" si el rol no es admin."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000/api"
+        },
+        {
+            "key": "clienteEmail",
+            "value": "cliente1@streamstore.test"
+        },
+        {
+            "key": "clientePassword",
+            "value": "Cliente123*"
+        },
+        {
+            "key": "adminEmail",
+            "value": "admin@streamstore.test"
+        },
+        {
+            "key": "adminPassword",
+            "value": "Admin123*"
+        },
+        {
+            "key": "tokenCliente",
+            "value": ""
+        },
+        {
+            "key": "tokenAdmin",
+            "value": ""
+        },
+        {
+            "key": "productoId",
+            "value": ""
+        },
+        {
+            "key": "productoDisneyId",
+            "value": ""
+        },
+        {
+            "key": "itemId",
+            "value": ""
+        },
+        {
+            "key": "compraId",
+            "value": ""
+        },
+        {
+            "key": "plataformaId",
+            "value": ""
+        },
+        {
+            "key": "flujoEmail",
+            "value": ""
+        },
+        {
+            "key": "flujoPassword",
+            "value": "Cliente123*"
+        }
+    ]
+}

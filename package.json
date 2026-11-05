@@ -8,7 +8,8 @@
         "build": "tsc",
         "start": "node dist/server.js",
         "type-check": "tsc --noEmit",
-        "seed": "tsx src/seeds/seed.ts"
+        "seed": "tsx src/seeds/seed.ts",
+        "demo:reset": "tsx src/seeds/demoReset.ts"
     },
     "dependencies": {
         "bcrypt": "^6.0.0",
