@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS carritoItems (
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_carrito_usuario_producto (usuarioId, productoId),
-    CONSTRAINT fk_carrito_usuario FOREIGN KEY (usuarioId) REFERENCES usuarios(id),
-    CONSTRAINT fk_carrito_producto FOREIGN KEY (productoId) REFERENCES productos(id)
+    CONSTRAINT fk_carrito_usuario FOREIGN KEY (usuarioId) REFERENCES usuarios(id) ON DELETE CASCADE,
+    CONSTRAINT fk_carrito_producto FOREIGN KEY (productoId) REFERENCES productos(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS compras (

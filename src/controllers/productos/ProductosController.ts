@@ -1,10 +1,12 @@
 import type { Request, Response } from "express"
 import { ProductosRepository } from "../../repositories/productos/ProductosRepository.js"
+import { StockRepository } from "../../repositories/inventario/StockRepository.js"
+import { StockService } from "../../services/inventario/StockService.js"
 import { ProductosService } from "../../services/productos/ProductosService.js"
 import { ApiResponse } from "../../utils/apiResponse.js"
 import type { ListProductosQuery } from "../../validators/productos/ProductosValidators.js"
 
-const service = new ProductosService(new ProductosRepository())
+const service = new ProductosService(new ProductosRepository(), new StockService(new StockRepository()))
 
 export class ProductosController {
     static async list(_req: Request, res: Response): Promise<void> {

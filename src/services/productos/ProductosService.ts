@@ -1,18 +1,17 @@
 import type { ProductoPublico } from "../../interfaces/Catalogo.js"
 import type { Producto } from "../../models/Producto.js"
 import { ProductosRepository } from "../../repositories/productos/ProductosRepository.js"
+import { StockService } from "../inventario/StockService.js"
 import { toProductoPublico } from "../../utils/formatters.js"
 import { HttpError } from "../../utils/httpError.js"
 import { paginate, type PaginationResult } from "../../utils/pagination.js"
 import type { ListProductosQuery } from "../../validators/productos/ProductosValidators.js"
 
-interface StockPorTipo {
-    cuenta: Map<number, number>
-    pantalla: Map<number, number>
-}
-
 export class ProductosService {
-    constructor(private readonly productosRepository: ProductosRepository) {}
+    constructor(
+        private readonly productosRepository: ProductosRepository,
+        private readonly stockService: StockService
+    ) {}
 
     async list(query: ListProductosQuery): Promise<PaginationResult<ProductoPublico>> {
         const offset = (query.page - 1) * query.limit
@@ -22,8 +21,7 @@ export class ProductosService {
             limit: query.limit,
             offset
         })
-        const plataformaIds = [...new Set(rows.map((producto) => producto.plataformaId))]
-        const stock = await this.obtenerStock(plataformaIds)
+        const stock = await this.stockService.stockPorProducto(rows)
         const data = rows.map((producto) => this.toPublico(producto, stock))
 
         return paginate(data, query.page, query.limit, count)
@@ -36,23 +34,12 @@ export class ProductosService {
             throw new HttpError("Producto no encontrado", 404)
         }
 
-        const stock = await this.obtenerStock([producto.plataformaId])
+        const stock = await this.stockService.stockPorProducto([producto])
 
         return this.toPublico(producto, stock)
     }
 
-    private async obtenerStock(plataformaIds: number[]): Promise<StockPorTipo> {
-        const [cuenta, pantalla] = await Promise.all([
-            this.productosRepository.stockCuentasPorPlataforma(plataformaIds),
-            this.productosRepository.stockPantallasPorPlataforma(plataformaIds)
-        ])
-
-        return { cuenta, pantalla }
-    }
-
-    private toPublico(producto: Producto, stock: StockPorTipo): ProductoPublico {
-        const stockProducto = stock[producto.tipo].get(producto.plataformaId) ?? 0
-
-        return toProductoPublico(producto, stockProducto)
+    private toPublico(producto: Producto, stock: Map<number, number>): ProductoPublico {
+        return toProductoPublico(producto, stock.get(producto.id) ?? 0)
     }
 }

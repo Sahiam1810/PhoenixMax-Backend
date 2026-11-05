@@ -4,7 +4,31 @@ import type { Usuario } from "../models/Usuario.js"
 import type { PlataformaPublica, ProductoPublico } from "../interfaces/Catalogo.js"
 import type { UsuarioPublico } from "../interfaces/User.js"
 
-export const toMoney = (value: number): string => value.toFixed(2)
+export const toCentavos = (valor: string | number): bigint => {
+    const decimal = String(valor).trim()
+    const match = /^(-?)(\d+)(?:\.(\d{1,2}))?$/.exec(decimal)
+
+    if (!match) {
+        throw new Error("Valor monetario inválido")
+    }
+
+    const signo = match[1] === "-" ? -1n : 1n
+    const enteros = BigInt(match[2])
+    const decimales = (match[3] ?? "").padEnd(2, "0")
+
+    return signo * (enteros * 100n + BigInt(decimales))
+}
+
+export const fromCentavos = (centavos: bigint): string => {
+    const signo = centavos < 0n ? "-" : ""
+    const absoluto = centavos < 0n ? -centavos : centavos
+    const enteros = absoluto / 100n
+    const decimales = (absoluto % 100n).toString().padStart(2, "0")
+
+    return `${signo}${enteros}.${decimales}`
+}
+
+export const toMoney = (value: string | number): string => fromCentavos(toCentavos(value))
 
 export const toUsuarioPublico = (usuario: Usuario): UsuarioPublico => ({
     id: usuario.id,
@@ -32,7 +56,7 @@ export const toProductoPublico = (producto: Producto, stock: number): ProductoPu
         plataformaId: producto.plataformaId,
         tipo: producto.tipo,
         duracionDias: producto.duracionDias,
-        precio: toMoney(Number(producto.precio)),
+        precio: toMoney(producto.precio),
         stock,
         agotado: stock === 0,
         plataforma: {
