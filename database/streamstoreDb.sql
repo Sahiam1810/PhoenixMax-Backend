@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS cuentas (
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_cuentas_plataforma_estado (plataformaId, estado),
-    CONSTRAINT fk_cuentas_plataforma FOREIGN KEY (plataformaId) REFERENCES plataformas(id)
+    UNIQUE KEY uq_cuentas_plataforma_email (plataformaId, emailAcceso),
+    CONSTRAINT fk_cuentas_plataforma FOREIGN KEY (plataformaId) REFERENCES plataformas(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS pantallas (
@@ -57,7 +58,8 @@ CREATE TABLE IF NOT EXISTS pantallas (
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_pantallas_cuenta_estado (cuentaId, estado),
-    CONSTRAINT fk_pantallas_cuenta FOREIGN KEY (cuentaId) REFERENCES cuentas(id)
+    UNIQUE KEY uq_pantallas_cuenta_perfil (cuentaId, nombrePerfil),
+    CONSTRAINT fk_pantallas_cuenta FOREIGN KEY (cuentaId) REFERENCES cuentas(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS carritoItems (

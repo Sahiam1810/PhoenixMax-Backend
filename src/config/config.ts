@@ -7,6 +7,16 @@ const requiredInProduction = (value: string | undefined, name: string): string =
     return value ?? ""
 }
 
+const requiredAesSecret = (): string => {
+    const secret = process.env.AES_SECRET
+
+    if (!secret || secret.length < 32) {
+        throw new Error("AES_SECRET es obligatorio y debe tener al menos 32 caracteres")
+    }
+
+    return secret
+}
+
 export const config = {
     env: process.env.NODE_ENV ?? "development",
     port: Number(process.env.PORT ?? 3000),
@@ -25,7 +35,7 @@ export const config = {
         accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? "8h",
         refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? "7d"
     },
-    aesSecret: requiredInProduction(process.env.AES_SECRET, "AES_SECRET"),
+    aesSecret: requiredAesSecret(),
     mail: {
         host: process.env.MAIL_HOST ?? "",
         port: Number(process.env.MAIL_PORT ?? 587),
