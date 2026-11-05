@@ -5,7 +5,7 @@ import { HttpError } from "../utils/httpError.js"
 
 export const requireRole = (role: UserRole) => (req: Request, res: Response, next: NextFunction): void => {
     if (req.user?.rol !== role) {
-        ApiResponse.error(res, new HttpError("No tienes permisos para esta acción", 403))
+        ApiResponse.error(res, new HttpError("No tienes permiso", 403))
         return
     }
     next()

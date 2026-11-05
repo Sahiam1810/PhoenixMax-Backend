@@ -1,11 +1,36 @@
 import type { Request, Response } from "express"
+import { AuthRepository } from "../repositories/AuthRepository.js"
 import { AuthService } from "../services/AuthService.js"
 import { ApiResponse } from "../utils/apiResponse.js"
+import type { LoginInput, RegisterInput } from "../validators/AuthValidators.js"
 
-const service = new AuthService()
+const service = new AuthService(new AuthRepository())
 
 export class AuthController {
-    static register(_req: Request, res: Response): void { try { service.register() } catch (error) { ApiResponse.error(res, error) } }
-    static login(_req: Request, res: Response): void { try { service.login() } catch (error) { ApiResponse.error(res, error) } }
-    static me(_req: Request, res: Response): void { try { service.me() } catch (error) { ApiResponse.error(res, error) } }
+    static async register(req: Request, res: Response): Promise<void> {
+        try {
+            const usuario = await service.register(req.body as RegisterInput)
+            ApiResponse.created(res, usuario, "Usuario registrado")
+        } catch (error) {
+            ApiResponse.error(res, error)
+        }
+    }
+
+    static async login(req: Request, res: Response): Promise<void> {
+        try {
+            const result = await service.login(req.body as LoginInput)
+            ApiResponse.success(res, result, "Sesión iniciada")
+        } catch (error) {
+            ApiResponse.error(res, error)
+        }
+    }
+
+    static async me(req: Request, res: Response): Promise<void> {
+        try {
+            const usuario = await service.me(req.user!.id)
+            ApiResponse.success(res, usuario, "Usuario obtenido")
+        } catch (error) {
+            ApiResponse.error(res, error)
+        }
+    }
 }
