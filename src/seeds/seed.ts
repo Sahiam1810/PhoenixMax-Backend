@@ -173,6 +173,33 @@ const sembrarServicios = async (): Promise<void> => {
     const productoMax = await productoDe("Max", "cuenta")
     await crearServicio(cliente1, productoMax, await cuentaDe("Max", 0), null, 20)
     await crearServicio(cliente2, productoMax, await cuentaDe("Max", 1), null, 12)
+
+    // Stock bajo: vender pantallas de Prime Video hasta dejar solo 1 disponible
+    // Prime Video tiene 3 cuentas × 3 pantallas = 9 totales
+    // Vendemos las 3 pantallas de cuenta 0 y cuenta 1 (6 pantallas)
+    // + 2 pantallas de cuenta 2 → queda 1 pantalla disponible
+    const primeProductoPantalla = await productoDe("Prime Video", "pantalla")
+
+    const prime0 = await cuentaDe("Prime Video", 0)
+    const pantallasP0 = await Pantalla.findAll({ where: { cuentaId: prime0.id, estado: "disponible" }, order: [["id", "ASC"]] })
+    for (const p of pantallasP0) {
+        await crearServicio(cliente1, primeProductoPantalla, prime0, p, 25)
+    }
+
+    const prime1 = await cuentaDe("Prime Video", 1)
+    const pantallasP1 = await Pantalla.findAll({ where: { cuentaId: prime1.id, estado: "disponible" }, order: [["id", "ASC"]] })
+    for (const p of pantallasP1) {
+        await crearServicio(cliente2, primeProductoPantalla, prime1, p, 22)
+    }
+
+    const prime2 = await cuentaDe("Prime Video", 2)
+    const pantallasP2 = await Pantalla.findAll({ where: { cuentaId: prime2.id, estado: "disponible" }, order: [["id", "ASC"]] })
+    // Vender todas menos la última → queda 1 pantalla disponible
+    for (let i = 0; i < pantallasP2.length - 1; i++) {
+        await crearServicio(cliente1, primeProductoPantalla, prime2, pantallasP2[i], 18)
+    }
+
+    console.log("Stock bajo: pantalla Prime Video → 1 unidad disponible")
 }
 
 const ejecutar = async (): Promise<void> => {
