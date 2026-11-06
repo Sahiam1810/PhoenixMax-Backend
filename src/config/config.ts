@@ -1,4 +1,6 @@
-import "dotenv/config"
+import dotenv from "dotenv"
+
+dotenv.config({ override: true })
 
 const requiredInProduction = (value: string | undefined, name: string): string => {
     if (process.env.NODE_ENV === "production" && !value) {

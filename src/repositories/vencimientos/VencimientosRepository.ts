@@ -15,7 +15,7 @@ export class VencimientosRepository {
                 {
                     model: Usuario,
                     required: true,
-                    attributes: ["id", "nombre", "email"]
+                    attributes: ["id", "nombre", "email", "telefono"]
                 },
                 {
                     model: CompraItem,

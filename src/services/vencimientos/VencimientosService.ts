@@ -156,9 +156,14 @@ export class VencimientosService {
                 html: correo.html
             })
             correoEnviado = true
-        } catch {
+        } catch (error) {
             await this.repository.deleteNotificacion(notificacionId)
-            logger.error("No se pudo enviar la notificación de vencimiento", { servicioId: alerta.servicioId, tipo: alerta.tipo })
+            const errorMsg = error instanceof Error ? error.message : String(error)
+            logger.error("No se pudo enviar la notificación de vencimiento", {
+                servicioId: alerta.servicioId,
+                tipo: alerta.tipo,
+                error: errorMsg
+            })
 
             return { correo: "fallido", whatsapp: "omitido" }
         }
