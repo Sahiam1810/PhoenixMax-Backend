@@ -185,7 +185,7 @@ export class ComprasService {
     }
 
     private async pagarEnTransaccion(usuarioId: number, compraId: number, input: PayCompraInput): Promise<void> {
-        await this.sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED }, async (transaction) => {
+        await this.sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE }, async (transaction) => {
             const compra = await this.comprasRepository.findCompraParaPago(compraId, usuarioId, transaction)
 
             if (!compra) {
