@@ -25,4 +25,22 @@ export class AuthRepository {
             rol: "cliente"
         })
     }
+
+    async update(id: number, input: { nombre?: string; telefono?: string | null }): Promise<Usuario | null> {
+        const usuario = await Usuario.findByPk(id)
+        if (!usuario) {
+            return null
+        }
+
+        if (input.nombre !== undefined) {
+            usuario.nombre = input.nombre
+        }
+
+        if (input.telefono !== undefined) {
+            usuario.telefono = input.telefono?.trim() || null
+        }
+
+        await usuario.save()
+        return usuario
+    }
 }

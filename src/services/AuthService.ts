@@ -4,7 +4,7 @@ import { UniqueConstraintError } from "sequelize"
 import { config } from "../config/config.js"
 import type { AuthUser, LoginResult, UsuarioPublico } from "../interfaces/User.js"
 import { AuthRepository } from "../repositories/AuthRepository.js"
-import type { LoginInput, RegisterInput } from "../validators/AuthValidators.js"
+import type { ActualizarPerfilInput, LoginInput, RegisterInput } from "../validators/AuthValidators.js"
 import { toUsuarioPublico } from "../utils/formatters.js"
 import { HttpError } from "../utils/httpError.js"
 
@@ -70,6 +70,16 @@ export class AuthService {
 
     async me(userId: number): Promise<UsuarioPublico> {
         const usuario = await this.authRepository.findById(userId)
+
+        if (!usuario) {
+            throw new HttpError("Usuario no encontrado", 404)
+        }
+
+        return toUsuarioPublico(usuario)
+    }
+
+    async actualizarPerfil(userId: number, input: ActualizarPerfilInput): Promise<UsuarioPublico> {
+        const usuario = await this.authRepository.update(userId, input)
 
         if (!usuario) {
             throw new HttpError("Usuario no encontrado", 404)

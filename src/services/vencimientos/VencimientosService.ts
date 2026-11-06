@@ -8,6 +8,7 @@ import { diferenciaDiasCalendario } from "../../utils/fechas.js"
 import { HttpError } from "../../utils/httpError.js"
 import { logger } from "../../utils/logger.js"
 import type { EnviarCorreo } from "../../utils/mailer.js"
+import { enviarWhatsAppWebhook } from "../../utils/whatsapp.js"
 import { plantillaVencimiento } from "./plantillaVencimiento.js"
 
 interface Alerta {
@@ -15,12 +16,16 @@ interface Alerta {
     tipo: TipoAlerta
     nombreCliente: string
     email: string
+    telefono: string | null
     plataforma: string
     tipoServicio: TipoProducto
     fechaVencimiento: Date
 }
 
-type ResultadoEnvio = "enviado" | "omitido" | "fallido"
+interface ResultadoNotificar {
+    correo: "enviado" | "omitido" | "fallido"
+    whatsapp: "enviado" | "omitido" | "fallido"
+}
 
 const ALERTAS_POR_DIFERENCIA = new Map<number, TipoAlerta>([
     [3, "3_dias"],
@@ -66,16 +71,21 @@ export class VencimientosService {
             .filter((alerta): alerta is Alerta => alerta !== null)
 
         let notificacionesEnviadas = 0
+        let whatsappEnviados = 0
         let errores = 0
 
         for (const alerta of alertas) {
             const envio = await this.notificar(alerta, ahora)
 
-            if (envio === "enviado") {
+            if (envio.correo === "enviado") {
                 notificacionesEnviadas += 1
             }
 
-            if (envio === "fallido") {
+            if (envio.whatsapp === "enviado") {
+                whatsappEnviados += 1
+            }
+
+            if (envio.correo === "fallido") {
                 errores += 1
             }
         }
@@ -85,6 +95,7 @@ export class VencimientosService {
         return {
             revisados: servicios.length,
             notificacionesEnviadas,
+            whatsappEnviados,
             serviciosVencidos,
             errores
         }
@@ -111,17 +122,18 @@ export class VencimientosService {
             tipo,
             nombreCliente: usuario.nombre,
             email: usuario.email,
+            telefono: usuario.telefono ?? null,
             plataforma: plataforma.nombre,
             tipoServicio: producto.tipo,
             fechaVencimiento: servicio.fechaVencimiento
         }
     }
 
-    private async notificar(alerta: Alerta, ahora: Date): Promise<ResultadoEnvio> {
+    private async notificar(alerta: Alerta, ahora: Date): Promise<ResultadoNotificar> {
         const notificacionId = await this.registrar(alerta, ahora)
 
         if (notificacionId === null) {
-            return "omitido"
+            return { correo: "omitido", whatsapp: "omitido" }
         }
 
         const correo = plantillaVencimiento({
@@ -135,6 +147,7 @@ export class VencimientosService {
             urlRenovar: urlRenovar()
         })
 
+        let correoEnviado = false
         try {
             await this.enviarCorreo({
                 to: alerta.email,
@@ -142,13 +155,34 @@ export class VencimientosService {
                 text: correo.text,
                 html: correo.html
             })
-
-            return "enviado"
+            correoEnviado = true
         } catch {
             await this.repository.deleteNotificacion(notificacionId)
             logger.error("No se pudo enviar la notificación de vencimiento", { servicioId: alerta.servicioId, tipo: alerta.tipo })
 
-            return "fallido"
+            return { correo: "fallido", whatsapp: "omitido" }
+        }
+
+        let whatsappEnviado = false
+        if (config.whatsappWebhookUrl && alerta.telefono) {
+            const textoVencimiento =
+                alerta.tipo === "3_dias"
+                    ? "en 3 días"
+                    : alerta.tipo === "1_dia"
+                    ? "mañana (en 1 día)"
+                    : "hoy"
+
+            const mensajeWhatsApp = `Hola ${alerta.nombreCliente}, tu servicio de ${alerta.plataforma} (${alerta.tipoServicio}) vence ${textoVencimiento}. Renuévalo aquí: ${urlRenovar()}`
+
+            whatsappEnviado = await enviarWhatsAppWebhook(config.whatsappWebhookUrl, {
+                telefono: alerta.telefono,
+                mensaje: mensajeWhatsApp
+            })
+        }
+
+        return {
+            correo: correoEnviado ? "enviado" : "fallido",
+            whatsapp: whatsappEnviado ? "enviado" : "omitido"
         }
     }
 

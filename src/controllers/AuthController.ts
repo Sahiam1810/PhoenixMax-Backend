@@ -2,7 +2,7 @@ import type { Request, Response } from "express"
 import { AuthRepository } from "../repositories/AuthRepository.js"
 import { AuthService } from "../services/AuthService.js"
 import { ApiResponse } from "../utils/apiResponse.js"
-import type { LoginInput, RegisterInput } from "../validators/AuthValidators.js"
+import type { ActualizarPerfilInput, LoginInput, RegisterInput } from "../validators/AuthValidators.js"
 
 const service = new AuthService(new AuthRepository())
 
@@ -29,6 +29,15 @@ export class AuthController {
         try {
             const usuario = await service.me(req.user!.id)
             ApiResponse.success(res, usuario, "Usuario obtenido")
+        } catch (error) {
+            ApiResponse.error(res, error)
+        }
+    }
+
+    static async actualizarPerfil(req: Request, res: Response): Promise<void> {
+        try {
+            const usuario = await service.actualizarPerfil(req.user!.id, req.body as ActualizarPerfilInput)
+            ApiResponse.success(res, usuario, "Perfil actualizado")
         } catch (error) {
             ApiResponse.error(res, error)
         }
