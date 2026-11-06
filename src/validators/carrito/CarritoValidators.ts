@@ -11,10 +11,18 @@ const cantidadSchema = z.coerce
     .positive("La cantidad debe ser un número entero positivo")
     .max(100, "La cantidad máxima es 100")
 
-export const addCarritoItemSchema = z.object({
+export const addCarritoItemSchema = z.preprocess((valor: unknown) => {
+    if (valor && typeof valor === "object") {
+        const obj = valor as Record<string, unknown>
+        if ("producto_id" in obj && !("productoId" in obj)) {
+            return { ...obj, productoId: obj.producto_id }
+        }
+    }
+    return valor
+}, z.object({
     productoId: productoIdSchema,
     cantidad: cantidadSchema
-})
+}))
 
 export const updateCarritoItemSchema = z.object({
     cantidad: cantidadSchema
