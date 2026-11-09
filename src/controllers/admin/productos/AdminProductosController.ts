@@ -1,11 +1,13 @@
 import type { Request, Response } from "express"
 import { AdminProductosRepository } from "../../../repositories/admin/productos/AdminProductosRepository.js"
+import { StockRepository } from "../../../repositories/inventario/StockRepository.js"
 import { AdminProductosService } from "../../../services/admin/productos/AdminProductosService.js"
+import { StockService } from "../../../services/inventario/StockService.js"
 import { ApiResponse } from "../../../utils/apiResponse.js"
 import type { IdParam } from "../../../validators/CommonValidators.js"
 import type { CreateAdminProductoInput, UpdateAdminProductoInput, UpdateAdminProductoEstadoInput } from "../../../validators/admin/productos/AdminProductosValidators.js"
 
-const service = new AdminProductosService(new AdminProductosRepository())
+const service = new AdminProductosService(new AdminProductosRepository(), new StockService(new StockRepository()))
 
 export class AdminProductosController {
     static async list(_req: Request, res: Response): Promise<void> {
