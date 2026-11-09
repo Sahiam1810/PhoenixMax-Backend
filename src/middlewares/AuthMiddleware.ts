@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express"
 import jwt from "jsonwebtoken"
 import { config } from "../config/config.js"
 import { ApiResponse } from "../utils/apiResponse.js"
+import { Usuario } from "../models/Usuario.js"
 import { z } from "../config/zod.js"
 
 const tokenPayloadSchema = z.object({
@@ -10,7 +11,7 @@ const tokenPayloadSchema = z.object({
     rol: z.enum(["cliente", "admin"])
 })
 
-export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const authorization = req.header("Authorization")
     const parts = authorization?.split(" ")
 
@@ -33,7 +34,14 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
             return
         }
 
-        req.user = result.data
+        const usuario = await Usuario.findByPk(result.data.id, { attributes: ["id", "rol", "activo"] })
+
+        if (!usuario || !usuario.activo) {
+            ApiResponse.unauthorized(res, "Usuario inactivo o no encontrado")
+            return
+        }
+
+        req.user = { ...result.data, rol: usuario.rol }
         next()
     } catch {
         ApiResponse.unauthorized(res, "Token inválido o vencido")
