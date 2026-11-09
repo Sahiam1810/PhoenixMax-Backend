@@ -17,6 +17,8 @@ export interface UsuarioPublico {
     email: string
     telefono: string | null
     rol: UserRole
+    activo: boolean
+    createdAt: string
 }
 
 export interface LoginResult {

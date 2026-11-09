@@ -22,7 +22,8 @@ export class AuthRepository {
             email: input.email,
             passwordHash: input.passwordHash,
             telefono: input.telefono ?? null,
-            rol: "cliente"
+            rol: "cliente",
+            activo: true
         })
     }
 

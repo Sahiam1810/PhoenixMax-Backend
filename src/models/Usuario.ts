@@ -10,10 +10,12 @@ export interface UsuarioAttributes {
     passwordHash: string
     telefono: string | null
     rol: "cliente" | "admin"
+    activo: boolean
 }
 
-export type UsuarioCreationAttributes = Optional<Omit<UsuarioAttributes, "rol">, "id" | "telefono"> & {
+export type UsuarioCreationAttributes = Optional<Omit<UsuarioAttributes, "rol" | "activo">, "id" | "telefono"> & {
     rol?: UsuarioAttributes["rol"] | string
+    activo?: boolean
 }
 
 @Table({ tableName: "usuarios", timestamps: true })
@@ -24,6 +26,7 @@ export class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
     @Column({ type: DataType.STRING(255), allowNull: false }) declare passwordHash: string
     @Column({ type: DataType.STRING(30), allowNull: true }) declare telefono: string | null
     @Column({ type: DataType.ENUM("cliente", "admin"), allowNull: false, defaultValue: "cliente" }) declare rol: "cliente" | "admin"
+    @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true }) declare activo: boolean
     @HasMany(() => CarritoItem) declare carritoItems?: CarritoItem[]
     @HasMany(() => Compra) declare compras?: Compra[]
 }

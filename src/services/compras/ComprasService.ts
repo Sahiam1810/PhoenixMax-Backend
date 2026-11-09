@@ -216,6 +216,7 @@ export class ComprasService {
 
             const productos = items.map((item) => this.productoDeItem(item))
             const faltantes = new Set<number>()
+            const noDisponibles = new Set<number>()
             const unidadesPorPlataforma = new Map<number, UnidadPedida[]>()
 
             for (const item of items) {
@@ -223,7 +224,7 @@ export class ComprasService {
                 const plataforma = this.obtenerPlataforma(producto)
 
                 if (!producto.activo || !plataforma.activo) {
-                    faltantes.add(item.id)
+                    noDisponibles.add(item.id)
                     continue
                 }
 
@@ -265,6 +266,14 @@ export class ComprasService {
                         faltantes.add(producto.itemId)
                     }
                 }
+            }
+
+            if (noDisponibles.size > 0) {
+                const nombres = productos
+                    .filter((producto) => noDisponibles.has(producto.itemId))
+                    .map((producto) => producto.nombre)
+
+                throw new HttpError(conAjuste([mensajeNoDisponible(nombres)]), 409)
             }
 
             if (faltantes.size > 0) {
