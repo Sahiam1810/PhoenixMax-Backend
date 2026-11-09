@@ -55,6 +55,8 @@ mysql -u root -p < database/streamstoreDb.sql
 ```bash
 mysql -u root -p streamstoreDb < database/migrations/20261105_indices_inventario.sql
 mysql -u root -p streamstoreDb < database/migrations/20261106_carrito_on_delete.sql
+mysql -u root -p streamstoreDb < database/migrations/20261109_renovar_servicio.sql
+mysql -u root -p streamstoreDb < database/migrations/20261109_usuarios_activo.sql
 ```
 
 Con MySQL Shell los pasos 3 y 4 son:
@@ -63,9 +65,12 @@ Con MySQL Shell los pasos 3 y 4 son:
 mysqlsh --sql --uri root@127.0.0.1:3306 -f database/streamstoreDb.sql
 mysqlsh --sql --uri root@127.0.0.1:3306/streamstoreDb -f database/migrations/20261105_indices_inventario.sql
 mysqlsh --sql --uri root@127.0.0.1:3306/streamstoreDb -f database/migrations/20261106_carrito_on_delete.sql
+mysqlsh --sql --uri root@127.0.0.1:3306/streamstoreDb -f database/migrations/20261109_renovar_servicio.sql
+mysqlsh --sql --uri root@127.0.0.1:3306/streamstoreDb -f database/migrations/20261109_usuarios_activo.sql
 ```
 
-Las migraciones se pueden ejecutar más de una vez: revisan si el índice o la llave foránea ya existe antes de crearla.
+Las migraciones revisan si sus columnas, índices o llaves foráneas ya existen antes de crearlos, por lo que se pueden volver a ejecutar.
+La migración de renovación mantiene `servicioIdIndice` sincronizada con triggers para conservar el índice único y permitir borrar servicios con `ON DELETE CASCADE`.
 
 5. Cargar los datos semilla y arrancar:
 
