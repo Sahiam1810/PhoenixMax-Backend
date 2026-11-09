@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS carritoItems (
     usuarioId INT UNSIGNED NOT NULL,
     productoId INT UNSIGNED NOT NULL,
     servicioId INT UNSIGNED NULL,
-    servicioIdIndice INT UNSIGNED AS (IFNULL(servicioId, 0)) STORED,
+    servicioIdIndice INT UNSIGNED NOT NULL DEFAULT 0,
     cantidad INT UNSIGNED NOT NULL DEFAULT 1,
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -76,6 +76,18 @@ CREATE TABLE IF NOT EXISTS carritoItems (
     CONSTRAINT fk_carrito_usuario FOREIGN KEY (usuarioId) REFERENCES usuarios(id) ON DELETE CASCADE,
     CONSTRAINT fk_carrito_producto FOREIGN KEY (productoId) REFERENCES productos(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
+
+DROP TRIGGER IF EXISTS bi_carritoitems_servicio_indice;
+CREATE TRIGGER bi_carritoitems_servicio_indice
+BEFORE INSERT ON carritoItems
+FOR EACH ROW
+SET NEW.servicioIdIndice = IFNULL(NEW.servicioId, 0);
+
+DROP TRIGGER IF EXISTS bu_carritoitems_servicio_indice;
+CREATE TRIGGER bu_carritoitems_servicio_indice
+BEFORE UPDATE ON carritoItems
+FOR EACH ROW
+SET NEW.servicioIdIndice = IFNULL(NEW.servicioId, 0);
 
 CREATE TABLE IF NOT EXISTS compras (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
