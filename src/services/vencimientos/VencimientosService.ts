@@ -29,10 +29,10 @@ const ALERTAS_POR_DIFERENCIA = new Map<number, TipoAlerta>([
     [0, "vencido"]
 ])
 
-const urlRenovar = (): string => {
+const urlRenovar = (servicioId: number): string => {
     const base = config.clientUrls[0].replace(/\/+$/, "")
 
-    return `${base}/mi-cuenta`
+    return `${base}/perfil?servicio=${servicioId}`
 }
 
 export class VencimientosService {
@@ -134,7 +134,7 @@ export class VencimientosService {
             fechaVencimiento: alerta.fechaVencimiento,
             yaVencio: alerta.fechaVencimiento.getTime() <= ahora.getTime(),
             timeZone: config.timezone,
-            urlRenovar: urlRenovar()
+            urlRenovar: urlRenovar(alerta.servicioId)
         })
 
         try {

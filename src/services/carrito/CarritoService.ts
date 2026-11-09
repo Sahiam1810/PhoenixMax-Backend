@@ -31,10 +31,11 @@ export class CarritoService {
                 throw new Error("El producto no tiene la plataforma cargada")
             }
 
+            const esRenovacion = item.servicioId !== null
             const noDisponible = !producto.activo || !plataforma.activo
-            const stock = noDisponible ? 0 : stockPorProducto.get(producto.id) ?? 0
+            const stock = esRenovacion ? 1 : (noDisponible ? 0 : stockPorProducto.get(producto.id) ?? 0)
             const agotado = stock === 0
-            const excedeStock = item.cantidad > stock && stock > 0
+            const excedeStock = !esRenovacion && item.cantidad > stock && stock > 0
             const precioUnitarioCentavos = toCentavos(producto.precio)
             const subtotalCentavos = precioUnitarioCentavos * BigInt(item.cantidad)
 
@@ -47,6 +48,9 @@ export class CarritoService {
             return {
                 id: item.id,
                 productoId: item.productoId,
+                servicioId: item.servicioId,
+                esRenovacion,
+                servicio: item.servicio ? { id: item.servicio.id, emailAcceso: item.servicio.cuenta?.emailAcceso ?? null, nombrePerfil: item.servicio.pantalla?.nombrePerfil ?? null } : null,
                 cantidad: item.cantidad,
                 precioUnitario: fromCentavos(precioUnitarioCentavos),
                 subtotal: fromCentavos(subtotalCentavos),
@@ -80,6 +84,18 @@ export class CarritoService {
             throw new HttpError("Producto no encontrado", 404)
         }
 
+        if (input.servicioId) {
+            const servicio = await this.carritoRepository.findServicioRenovable(input.servicioId, usuarioId)
+            const productoOriginal = servicio?.compraItem?.producto
+
+            if (!servicio || !productoOriginal || productoOriginal.tipo !== producto.tipo || productoOriginal.plataformaId !== producto.plataformaId) {
+                throw new HttpError("Servicio no encontrado", 404)
+            }
+
+            await this.agregarRenovacion(usuarioId, producto.id, input.servicioId)
+            return this.get(usuarioId)
+        }
+
         const stock = await this.obtenerStockProducto(producto)
 
         if (stock === 0) {
@@ -110,6 +126,10 @@ export class CarritoService {
 
         if (!producto) {
             throw new HttpError("El producto ya no está disponible", 400)
+        }
+
+        if (item.servicioId !== null) {
+            throw new HttpError("La cantidad de una renovación es siempre 1", 400)
         }
 
         const stock = await this.obtenerStockProducto(producto)
@@ -147,7 +167,7 @@ export class CarritoService {
 
     private async agregarEnTransaccion(usuarioId: number, input: AddCarritoItemInput, stock: number): Promise<void> {
         await this.sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED }, async (transaction) => {
-            const existente = await this.carritoRepository.findItemByProducto(usuarioId, input.productoId, transaction)
+            const existente = await this.carritoRepository.findItemByProducto(usuarioId, input.productoId, null, transaction)
             const cantidadTotal = (existente?.cantidad ?? 0) + input.cantidad
 
             if (cantidadTotal > stock) {
@@ -165,8 +185,17 @@ export class CarritoService {
             await this.carritoRepository.create({
                 usuarioId,
                 productoId: input.productoId,
-                cantidad: input.cantidad
+                cantidad: input.cantidad,
+                servicioId: null
             }, transaction)
+        })
+    }
+
+    private async agregarRenovacion(usuarioId: number, productoId: number, servicioId: number): Promise<void> {
+        await this.sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED }, async (transaction) => {
+            const existente = await this.carritoRepository.findItemByProducto(usuarioId, productoId, servicioId, transaction)
+            if (existente) throw new HttpError("Este servicio ya está en el carrito para renovación", 409)
+            await this.carritoRepository.create({ usuarioId, productoId, servicioId, cantidad: 1 }, transaction)
         })
     }
 

@@ -43,6 +43,8 @@ export class ServiciosService {
 
         return {
             id: servicio.id,
+            productoId: producto.id,
+            puedeRenovarse: true,
             plataforma: {
                 id: plataforma.id,
                 nombre: plataforma.nombre,

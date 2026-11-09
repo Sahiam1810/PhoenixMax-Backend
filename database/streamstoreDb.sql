@@ -67,10 +67,12 @@ CREATE TABLE IF NOT EXISTS carritoItems (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     usuarioId INT UNSIGNED NOT NULL,
     productoId INT UNSIGNED NOT NULL,
+    servicioId INT UNSIGNED NULL,
+    servicioIdIndice INT UNSIGNED AS (IFNULL(servicioId, 0)) STORED,
     cantidad INT UNSIGNED NOT NULL DEFAULT 1,
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_carrito_usuario_producto (usuarioId, productoId),
+    UNIQUE KEY uq_carrito_usuario_producto_servicio (usuarioId, productoId, servicioIdIndice),
     CONSTRAINT fk_carrito_usuario FOREIGN KEY (usuarioId) REFERENCES usuarios(id) ON DELETE CASCADE,
     CONSTRAINT fk_carrito_producto FOREIGN KEY (productoId) REFERENCES productos(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
@@ -91,6 +93,7 @@ CREATE TABLE IF NOT EXISTS compraItems (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     compraId INT UNSIGNED NOT NULL,
     productoId INT UNSIGNED NOT NULL,
+    servicioRenovadoId INT UNSIGNED NULL,
     cantidad INT UNSIGNED NOT NULL,
     precioUnitario DECIMAL(14,2) NOT NULL,
     subtotal DECIMAL(14,2) NOT NULL,

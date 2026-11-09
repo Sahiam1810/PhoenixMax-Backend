@@ -4,6 +4,8 @@ import { CompraItem, type CompraItemCreationAttributes } from "../../models/Comp
 import { Plataforma } from "../../models/Plataforma.js"
 import { Producto } from "../../models/Producto.js"
 import { Usuario } from "../../models/Usuario.js"
+import { Servicio } from "../../models/Servicio.js"
+import { Notificacion } from "../../models/Notificacion.js"
 
 interface FindComprasInput {
     usuarioId: number
@@ -62,6 +64,15 @@ export class ComprasRepository {
             metodoPago: data.metodoPago,
             pagadaAt: data.pagadaAt
         }, { transaction })
+    }
+
+    async lockServicioParaRenovar(servicioId: number, usuarioId: number, transaction: Transaction): Promise<Servicio | null> {
+        return Servicio.findOne({ where: { id: servicioId, usuarioId }, transaction, lock: transaction.LOCK.UPDATE })
+    }
+
+    async renovarServicio(servicio: Servicio, fechaVencimiento: Date, transaction: Transaction): Promise<void> {
+        await servicio.update({ fechaVencimiento, estado: "activo" }, { transaction })
+        await Notificacion.destroy({ where: { servicioId: servicio.id }, transaction })
     }
 
     async findCompraDetalle(id: number, usuarioId: number): Promise<Compra | null> {

@@ -97,6 +97,7 @@ export class ComprasService {
 
                 return {
                     productoId: item.productoId,
+                    servicioRenovadoId: item.servicioId,
                     cantidad: item.cantidad,
                     precioUnitario: fromCentavos(precioCentavos),
                     subtotal: fromCentavos(subtotalCentavos)
@@ -172,6 +173,8 @@ export class ComprasService {
                 continue
             }
 
+            if (item.esRenovacion) continue
+
             if (item.agotado || item.excedeStock) {
                 sinStock.push(nombre)
             }
@@ -227,6 +230,8 @@ export class ComprasService {
                     noDisponibles.add(item.id)
                     continue
                 }
+
+                if (item.servicioRenovadoId !== null) continue
 
                 const unidades = unidadesPorPlataforma.get(producto.plataformaId) ?? []
 
@@ -286,7 +291,8 @@ export class ComprasService {
 
             const ahora = new Date()
 
-            await this.aplicarPlanes(planes, items, usuarioId, ahora, transaction)
+            await this.aplicarPlanes(planes, items.filter((item) => item.servicioRenovadoId === null), usuarioId, ahora, transaction)
+            await this.aplicarRenovaciones(items, usuarioId, ahora, transaction)
             await this.comprasRepository.updateCompraPagada(compra, { metodoPago: input.metodoPago, pagadaAt: ahora }, transaction)
             await this.carritoRepository.deleteByUsuario(usuarioId, transaction)
         })
@@ -317,6 +323,7 @@ export class ComprasService {
             return {
                 plataforma: plataforma.nombre,
                 tipo: producto.tipo,
+                esRenovacion: item.servicioRenovadoId !== null,
                 duracionDias: producto.duracionDias,
                 cantidad: item.cantidad,
                 precioUnitario: fromCentavos(toCentavos(item.precioUnitario)),
@@ -376,6 +383,20 @@ export class ComprasService {
         await this.asignacionRepository.bulkCreateServicios(servicios, transaction)
     }
 
+    private async aplicarRenovaciones(items: CompraItem[], usuarioId: number, ahora: Date, transaction: Transaction): Promise<void> {
+        const serviciosRenovados = new Set<number>()
+        for (const item of items) {
+            if (item.servicioRenovadoId === null) continue
+            if (serviciosRenovados.has(item.servicioRenovadoId)) throw new HttpError("El mismo servicio no puede renovarse dos veces en una compra", 409)
+            serviciosRenovados.add(item.servicioRenovadoId)
+            const servicio = await this.comprasRepository.lockServicioParaRenovar(item.servicioRenovadoId, usuarioId, transaction)
+            if (!servicio) throw new HttpError("Servicio no encontrado", 404)
+            const producto = this.obtenerProducto(item)
+            const base = servicio.fechaVencimiento.getTime() > ahora.getTime() ? servicio.fechaVencimiento : ahora
+            await this.comprasRepository.renovarServicio(servicio, sumarDias(base, producto.duracionDias), transaction)
+        }
+    }
+
     private productoDeItem(item: CompraItem): ProductoDeItem {
         const producto = this.obtenerProducto(item)
         const plataforma = this.obtenerPlataforma(producto)
@@ -425,6 +446,8 @@ export class ComprasService {
         return {
             id: item.id,
             productoId: item.productoId,
+            servicioRenovadoId: item.servicioRenovadoId,
+            esRenovacion: item.servicioRenovadoId !== null,
             cantidad: item.cantidad,
             precioUnitario: fromCentavos(toCentavos(item.precioUnitario)),
             subtotal: fromCentavos(toCentavos(item.subtotal)),

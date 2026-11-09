@@ -6,6 +6,8 @@ export type TipoAlerta = "3_dias" | "1_dia" | "vencido"
 
 export interface ServicioPublico {
     id: number
+    productoId: number
+    puedeRenovarse: boolean
     plataforma: PlataformaResumen
     tipo: TipoProducto
     emailAcceso: string | null
