@@ -45,6 +45,5 @@ export const config = {
         pass: process.env.MAIL_PASS ?? "",
         from: process.env.MAIL_FROM ?? ""
     },
-    whatsappWebhookUrl: process.env.WHATSAPP_WEBHOOK_URL ?? "",
     timezone: process.env.APP_TIMEZONE ?? "-05:00"
 }

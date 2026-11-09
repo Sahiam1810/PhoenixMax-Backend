@@ -21,7 +21,6 @@ export interface ServicioPublico {
 export interface ResultadoVencimientos {
     revisados: number
     notificacionesEnviadas: number
-    whatsappEnviados: number
     serviciosVencidos: number
     errores: number
 }
