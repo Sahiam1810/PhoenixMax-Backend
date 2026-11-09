@@ -3,6 +3,7 @@ import { Compra, type CompraCreationAttributes } from "../../models/Compra.js"
 import { CompraItem, type CompraItemCreationAttributes } from "../../models/CompraItem.js"
 import { Plataforma } from "../../models/Plataforma.js"
 import { Producto } from "../../models/Producto.js"
+import { Usuario } from "../../models/Usuario.js"
 
 interface FindComprasInput {
     usuarioId: number
@@ -69,7 +70,7 @@ export class ComprasRepository {
             include: [{
                 model: CompraItem,
                 include: [productoConPlataformaInclude]
-            }],
+            }, { model: Usuario }],
             order: [[{ model: CompraItem, as: "compraItems" }, "id", "ASC"]]
         })
     }

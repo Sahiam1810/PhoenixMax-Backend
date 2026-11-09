@@ -9,11 +9,12 @@ import { CarritoService } from "../../services/carrito/CarritoService.js"
 import { ComprasService } from "../../services/compras/ComprasService.js"
 import { StockService } from "../../services/inventario/StockService.js"
 import { ApiResponse } from "../../utils/apiResponse.js"
+import { enviarCorreo } from "../../utils/mailer.js"
 import type { ListComprasQuery, PayCompraInput } from "../../validators/compras/ComprasValidators.js"
 
 const carritoRepository = new CarritoRepository(new ProductosRepository())
 const carritoService = new CarritoService(carritoRepository, new StockService(new StockRepository()), sequelize)
-const service = new ComprasService(new ComprasRepository(), new AsignacionRepository(), carritoService, carritoRepository, sequelize)
+const service = new ComprasService(new ComprasRepository(), new AsignacionRepository(), carritoService, carritoRepository, sequelize, enviarCorreo)
 
 export class ComprasController {
     static async create(req: Request, res: Response): Promise<void> {
