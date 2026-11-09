@@ -35,7 +35,9 @@ export const toUsuarioPublico = (usuario: Usuario): UsuarioPublico => ({
     nombre: usuario.nombre,
     email: usuario.email,
     telefono: usuario.telefono,
-    rol: usuario.rol
+    rol: usuario.rol,
+    activo: usuario.activo,
+    createdAt: usuario.createdAt.toISOString()
 })
 
 export const toPlataformaPublica = (plataforma: Plataforma): PlataformaPublica => ({

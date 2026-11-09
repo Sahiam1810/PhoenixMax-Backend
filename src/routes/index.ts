@@ -13,6 +13,7 @@ import { adminCronRouter } from "./admin/cron/AdminCronRoutes.js"
 import { adminPlataformasRouter } from "./admin/plataformas/AdminPlataformasRoutes.js"
 import { adminProductosRouter } from "./admin/productos/AdminProductosRoutes.js"
 import { adminResumenRouter } from "./admin/resumen/AdminResumenRoutes.js"
+import { adminUsuariosRouter } from "./admin/usuarios/AdminUsuariosRoutes.js"
 import { authenticate } from "../middlewares/AuthMiddleware.js"
 import { requireRole } from "../middlewares/RoleMiddleware.js"
 
@@ -35,6 +36,7 @@ apiRouter.use("/compras", comprasRouter)
 apiRouter.use("/servicios", serviciosRouter)
 apiRouter.use("/admin", authenticate, requireRole("admin"))
 apiRouter.use("/admin/cuentas", adminCuentasRouter)
+apiRouter.use("/admin/usuarios", adminUsuariosRouter)
 apiRouter.use("/admin/plataformas", adminPlataformasRouter)
 apiRouter.use("/admin/productos", adminProductosRouter)
 apiRouter.use("/admin/compras", adminComprasRouter)

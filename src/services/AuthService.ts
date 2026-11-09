@@ -49,6 +49,10 @@ export class AuthService {
             throw new HttpError("Credenciales incorrectas", 401)
         }
 
+        if (!usuario.activo) {
+            throw new HttpError("Usuario inactivo", 403)
+        }
+
         if (!config.jwt.secret) {
             throw new Error("JWT_SECRET no configurado")
         }
