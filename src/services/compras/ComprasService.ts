@@ -1,5 +1,6 @@
 import { DatabaseError, Transaction } from "sequelize"
 import type { Sequelize } from "sequelize-typescript"
+import { config } from "../../config/config.js"
 import type { CarritoItemPublico } from "../../interfaces/Carrito.js"
 import type { TipoProducto } from "../../interfaces/Catalogo.js"
 import type { CompraItemPublico, CompraPublica } from "../../interfaces/Compra.js"
@@ -13,10 +14,13 @@ import { AsignacionRepository } from "../../repositories/inventario/AsignacionRe
 import { sumarDias } from "../../utils/fechas.js"
 import { fromCentavos, toCentavos } from "../../utils/formatters.js"
 import { HttpError } from "../../utils/httpError.js"
+import { logger } from "../../utils/logger.js"
+import type { EnviarCorreo } from "../../utils/mailer.js"
 import { paginate, type PaginationResult } from "../../utils/pagination.js"
 import type { ListComprasQuery, PayCompraInput } from "../../validators/compras/ComprasValidators.js"
 import { CarritoService } from "../carrito/CarritoService.js"
 import { planificarAsignacion, type PlanAsignacion, type UnidadPedida } from "./planificarAsignacion.js"
+import { plantillaConfirmacionCompra } from "./plantillaConfirmacionCompra.js"
 
 const ERRNO_DEADLOCK = 1213
 const REINTENTOS_DEADLOCK = 2
@@ -68,7 +72,8 @@ export class ComprasService {
         private readonly asignacionRepository: AsignacionRepository,
         private readonly carritoService: CarritoService,
         private readonly carritoRepository: CarritoRepository,
-        private readonly sequelize: Sequelize
+        private readonly sequelize: Sequelize,
+        private readonly enviarCorreo: EnviarCorreo
     ) {}
 
     async create(usuarioId: number): Promise<CompraPublica> {
@@ -119,7 +124,10 @@ export class ComprasService {
             try {
                 await this.pagarEnTransaccion(usuarioId, compraId, input)
 
-                return this.getById(usuarioId, compraId)
+                const compra = await this.getById(usuarioId, compraId)
+                this.programarConfirmacionCompra(usuarioId, compraId)
+
+                return compra
             } catch (error) {
                 if (error instanceof HttpError || !esDeadlock(error) || intento >= REINTENTOS_DEADLOCK) {
                     throw error
@@ -272,6 +280,56 @@ export class ComprasService {
             await this.aplicarPlanes(planes, items, usuarioId, ahora, transaction)
             await this.comprasRepository.updateCompraPagada(compra, { metodoPago: input.metodoPago, pagadaAt: ahora }, transaction)
             await this.carritoRepository.deleteByUsuario(usuarioId, transaction)
+        })
+    }
+
+    private programarConfirmacionCompra(usuarioId: number, compraId: number): void {
+        void this.enviarConfirmacionCompra(usuarioId, compraId).catch((error: unknown) => {
+            logger.error("No se pudo enviar la confirmación de compra", {
+                compraId,
+                usuarioId,
+                error: error instanceof Error ? error.message : String(error)
+            })
+        })
+    }
+
+    private async enviarConfirmacionCompra(usuarioId: number, compraId: number): Promise<void> {
+        const compra = await this.comprasRepository.findCompraDetalle(compraId, usuarioId)
+        const usuario = compra?.usuario
+
+        if (!compra || compra.estado !== "pagada" || !compra.pagadaAt || !usuario) {
+            throw new Error("No se pudo obtener la compra pagada para su confirmación")
+        }
+
+        const items = (compra.compraItems ?? []).map((item) => {
+            const producto = this.obtenerProducto(item)
+            const plataforma = this.obtenerPlataforma(producto)
+
+            return {
+                plataforma: plataforma.nombre,
+                tipo: producto.tipo,
+                duracionDias: producto.duracionDias,
+                cantidad: item.cantidad,
+                precioUnitario: fromCentavos(toCentavos(item.precioUnitario)),
+                subtotal: fromCentavos(toCentavos(item.subtotal))
+            }
+        })
+        const base = config.clientUrls[0].replace(/\/+$/, "")
+        const correo = plantillaConfirmacionCompra({
+            nombreCliente: usuario.nombre,
+            compraId: compra.id,
+            fechaCompra: compra.pagadaAt,
+            items,
+            total: fromCentavos(toCentavos(compra.total)),
+            timeZone: config.timezone,
+            urlMisServicios: `${base}/mi-cuenta`
+        })
+
+        await this.enviarCorreo({
+            to: usuario.email,
+            subject: correo.subject,
+            text: correo.text,
+            html: correo.html
         })
     }
 

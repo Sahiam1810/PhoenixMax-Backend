@@ -36,7 +36,7 @@ import { StockService } from "../services/inventario/StockService.js"
 
 const carritoRepository = new CarritoRepository(new ProductosRepository())
 const carritoService = new CarritoService(carritoRepository, new StockService(new StockRepository()), sequelize)
-const comprasService = new ComprasService(new ComprasRepository(), new AsignacionRepository(), carritoService, carritoRepository, sequelize)
+const comprasService = new ComprasService(new ComprasRepository(), new AsignacionRepository(), carritoService, carritoRepository, sequelize, async () => undefined)
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
