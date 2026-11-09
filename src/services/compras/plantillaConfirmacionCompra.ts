@@ -3,6 +3,7 @@ import type { TipoProducto } from "../../interfaces/Catalogo.js"
 export interface ItemConfirmacionCompra {
     plataforma: string
     tipo: TipoProducto
+    esRenovacion: boolean
     duracionDias: number
     cantidad: number
     precioUnitario: string
@@ -36,6 +37,7 @@ const ESCAPES: Record<string, string> = {
 const escaparHtml = (valor: string): string => valor.replace(/[&<>"']/g, (caracter) => ESCAPES[caracter])
 
 const modalidad = (tipo: TipoProducto): string => tipo === "pantalla" ? "Pantalla individual" : "Cuenta completa"
+const descripcionItem = (item: ItemConfirmacionCompra): string => `${item.esRenovacion ? "Renovación · " : ""}${modalidad(item.tipo)}`
 
 const formatearDinero = (valor: string): string => new Intl.NumberFormat("es-CO", {
     style: "currency",
@@ -72,7 +74,7 @@ export const plantillaConfirmacionCompra = (input: PlantillaConfirmacionCompraIn
     const filas = input.items.map((item) => [
         "<tr>",
         `<td style="padding:8px;border-bottom:1px solid #e5e7eb">${escaparHtml(item.plataforma)}</td>`,
-        `<td style="padding:8px;border-bottom:1px solid #e5e7eb">${escaparHtml(modalidad(item.tipo))}</td>`,
+        `<td style="padding:8px;border-bottom:1px solid #e5e7eb">${escaparHtml(descripcionItem(item))}</td>`,
         `<td style="padding:8px;border-bottom:1px solid #e5e7eb">${item.duracionDias} días</td>`,
         `<td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:center">${item.cantidad}</td>`,
         `<td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right">${escaparHtml(formatearDinero(item.precioUnitario))}</td>`,

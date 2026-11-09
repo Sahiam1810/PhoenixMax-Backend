@@ -5,6 +5,8 @@ export type EstadoCompra = "pendiente" | "pagada" | "cancelada"
 export interface CompraItemPublico {
     id: number
     productoId: number
+    servicioRenovadoId: number | null
+    esRenovacion: boolean
     cantidad: number
     precioUnitario: string
     subtotal: string
